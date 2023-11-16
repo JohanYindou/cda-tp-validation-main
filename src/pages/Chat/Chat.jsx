@@ -4,36 +4,42 @@ import confetti from 'canvas-confetti'
 import OpenAI from 'openai'
 import config from '../../../config'
 
+// Composant Chat pour interagir avec l'API OpenAI
 function Chat() {
+    // Initialisation des états
     const location = useLocation()
     const navigate = useNavigate()
-    const formData = location.state?.formData
-    const [userQuestion, setUserQuestion] = useState('')
-    const [conversation, setConversation] = useState([]) // Stocke les conversations
+    const [formData, setFormData] = useState(location.state?.formData) // Stocke les données du formulaire
+    const [userQuestion, setUserQuestion] = useState('') // Stocke la question de l'utilisateur
+    const [conversation, setConversation] = useState([]) // Stocke la conversation entre l'utilisateur et l'IA
 
+    // Effet pour la vérification des données du formulaire
     useEffect(() => {
-        if (formData.name && formData.subject) {
+        // Vérifie si les données du formulaire (nom et sujet) sont présentes
+        if (formData?.name && formData?.subject) {
+            // Déclenche des confettis si les données du formulaire sont présentes
             confetti({
                 particleCount: 100,
                 spread: 70,
                 origin: { y: 0.6 },
             })
         } else {
+            // Redirige vers la page d'accueil si les données du formulaire sont manquantes
             navigate('/')
         }
     }, [formData, navigate])
 
-    // Initialise l'API OpenAI
+    // Initialisation de l'API OpenAI
     const openai = new OpenAI({
         apiKey: config.OPENAI_API_KEY,
         dangerouslyAllowBrowser: true,
     })
 
-    // Fonction pour gérer l'envoi de la question à l'API et recevoir la réponse
+    // Gestion de la soumission des questions
     const handleQuestionSubmission = async event => {
         event.preventDefault()
         try {
-            // Utilise l'API OpenAI pour obtenir la réponse
+            // Envoie la question à l'API OpenAI pour obtenir une réponse
             const response = await openai.chat.completions.create({
                 model: 'gpt-3.5-turbo',
                 messages: [
@@ -51,16 +57,18 @@ function Chat() {
                 { role: 'user', content: userQuestion },
                 { role: 'bot', content: response.choices[0].message.content },
             ])
-            setUserQuestion('') // Efface la question de l'input
+            setUserQuestion('')
         } catch (error) {
             console.error('Error:', error)
         }
     }
 
+    // Vérifie si les données du formulaire sont présentes, sinon rend null
     if (!formData) {
         return null
     }
 
+    // Rendu de l'interface utilisateur
     return (
         <main className="text-center container mt-5">
             <h1 className="form-signin col-md-6 col-sm-10 m-auto mb-3">
