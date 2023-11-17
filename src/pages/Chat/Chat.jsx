@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import confetti from 'canvas-confetti'
 import OpenAI from 'openai'
+import Toast from '../Home/_components/ToastMessage'
 import config from '../../../config'
 
 // Composant Chat pour interagir avec l'API OpenAI
@@ -11,7 +12,10 @@ function Chat() {
     const navigate = useNavigate()
     const [formData, setFormData] = useState(location.state?.formData) // Stocke les données du formulaire
     const [userQuestion, setUserQuestion] = useState('') // Stocke la question de l'utilisateur
-    const [conversation, setConversation] = useState([]) // Stocke la conversation entre l'utilisateur et l'IA
+    const [conversation, setConversation] = useState([]); // Stocke la conversation entre l'utilisateur et l'IA
+    
+    const prePrompt = `Agis comme un chat bot qui répond aux question de ${formData.name}.
+    Répond en commencent par son prénom et une salutation originale. La thématique est ${formData.subject}` ;
 
     // Effet pour la vérification des données du formulaire
     useEffect(() => {
@@ -41,13 +45,12 @@ function Chat() {
         try {
             // Envoie la question à l'API OpenAI pour obtenir une réponse
             const response = await openai.chat.completions.create({
-                model: 'gpt-3.5-turbo',
+                model: 'gpt-3.5-turbo-0613',
                 messages: [
                     {
-                        role: 'system',
-                        content: `Je m'appelle ${formData.name}.`,
-                    },
-                    { role: 'user', content: userQuestion },
+                        role: 'user',
+                        content: `${prePrompt + userQuestion}`,
+                    }
                 ],
             })
 
